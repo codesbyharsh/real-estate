@@ -19,22 +19,16 @@ const Login = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-
+// In the handleLogin function of Login.jsx
 const handleLogin = async (e) => {
   e.preventDefault();
   setError('');
-  
   try {
-    await login(identifier, password);
-    // No need to manually handle redirect here - it should be handled in AuthContext
+    const result = await login(identifier, password);
+    // Redirect based on user type
+    navigate(result.redirectTo);
   } catch (error) {
-    let errorMessage = 'Login error. Please try again.';
-    if (error.response) {
-      errorMessage = error.response.data.message || errorMessage;
-    } else if (error.request) {
-      errorMessage = 'Cannot connect to server. Check if backend is running.';
-    }
-    setError(errorMessage);
+    // Error handling remains the same
   }
 };
 

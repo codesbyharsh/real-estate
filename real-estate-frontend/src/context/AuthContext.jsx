@@ -8,25 +8,26 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
 
-  const login = async (identifier, password) => {
-    try {
-      const response = await axios.post('http://localhost:5000/api/users/login', {
-        identifier,
-        password
-      }, {
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      setCurrentUser(response.data);
-      setIsLoggedIn(true);
-      localStorage.setItem('user', JSON.stringify(response.data));
-      return response.data;
-    } catch (error) {
-      throw error;
-    }
-  };
+ const login = async (identifier, password) => {
+  try {
+    const response = await axios.post('http://localhost:5000/api/users/login', {
+      identifier,
+      password
+    });
+
+    setCurrentUser(response.data);
+    setIsLoggedIn(true);
+    localStorage.setItem('user', JSON.stringify(response.data));
+    
+    // Return the user data including the redirect path
+    return {
+      ...response.data,
+      redirectTo: response.data.isAdmin ? '/admin/dashboard' : '/'
+    };
+  } catch (error) {
+    throw error;
+  }
+};
 
   const logout = async () => {
     try {

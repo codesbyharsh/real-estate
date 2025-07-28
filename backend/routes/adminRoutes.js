@@ -21,31 +21,29 @@ router.get('/seller-applications', async (req, res) => {
 
 // Protect all admin routes
 router.use(adminAuth);
-
-// Approve seller application
-router.put('/approve-seller/:id', async (req, res) => {
+// Approve/Reject seller application
+router.put('/seller-application/:id', adminAuth, async (req, res) => {
   try {
+    const { action } = req.body; // 'approve' or 'reject'
     const user = await User.findById(req.params.id);
     
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
+
+    if (action === 'approve') {
+      user.role = 'seller';
+      user.isSellerApproved = true;
+    }
     
-    // Update user role and approval status
-    user.role = 'seller';
-    user.isSellerApproved = true;
+    user.sellerApplication.status = action === 'approve' ? 'approved' : 'rejected';
     await user.save();
-    
-    // Return user without password
-    const userWithoutPassword = { ...user.toObject() };
-    delete userWithoutPassword.password;
-    
-    res.json(userWithoutPassword);
+
+    res.json({ success: true });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
 });
-
 // Admin login
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;

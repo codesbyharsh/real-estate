@@ -7,26 +7,28 @@ const AdminLogin = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+ // In the handleSubmit function of AdminLogin.jsx
+const handleSubmit = async (e) => {
+  e.preventDefault();
+  try {
+    const response = await fetch('http://localhost:5000/api/admin/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password })
+    });
+    const data = await response.json();
     
-    try {
-   const response = await fetch('http://localhost:5000/api/admin/login', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify({ email, password })
-});
-      const data = await response.json();
-      
-      if (!response.ok) throw new Error(data.message);
-      
-      // Store admin token
-      localStorage.setItem('adminToken', JSON.stringify(data));
-      navigate('/admin/dashboard');
-    } catch (err) {
-      setError(err.message);
-    }
-  };
+    if (!response.ok) throw new Error(data.message);
+
+    // Store admin data
+    localStorage.setItem('user', JSON.stringify(data));
+    
+    // Always redirect to admin dashboard for admin login
+    navigate('/admin/dashboard');
+  } catch (err) {
+    setError(err.message);
+  }
+};
 
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">

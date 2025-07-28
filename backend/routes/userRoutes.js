@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
+const { uploadToCloudinary } = require('../utils/cloudinary');
+const multer = require('multer');
+const upload = multer({ storage: multer.memoryStorage() });
 
 router.post('/logout/:userId', async (req, res) => {
   try {
@@ -97,24 +100,42 @@ router.post('/login', async (req, res) => {
 });
 
 
-router.put('/:id/become-seller', async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id);
-    
-    if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+router.put(
+  '/:id/become-seller',
+  upload.fields([
+    { name: 'idProof', maxCount: 1 },
+    { name: 'addressProof', maxCount: 1 }
+  ]),
+  async (req, res) => {
+    try {
+      // Validate files were uploaded
+      if (!req.files.idProof || !req.files.addressProof) {
+        return res.status(400).json({ error: 'Both ID proof and address proof are required' });
+      }
+
+      const [idProof, addressProof] = await Promise.all([
+        uploadToCloudinary(req.files.idProof[0].buffer, 'id-proofs'),
+        uploadToCloudinary(req.files.addressProof[0].buffer, 'address-proofs')
+      ]);
+
+      await User.findByIdAndUpdate(req.params.id, {
+        $set: {
+          'sellerApplication.documents.idProof': idProof.secure_url,
+          'sellerApplication.documents.addressProof': addressProof.secure_url,
+          'sellerApplication.status': 'pending',
+          'sellerApplication.submittedAt': new Date()
+        }
+      });
+
+      res.json({ success: true });
+    } catch (error) {
+      console.error('Error in become-seller:', error);
+      res.status(500).json({ 
+        error: error.message || 'Failed to process seller application' 
+      });
     }
-    
-    // Update user role to seller (pending approval)
-    user.role = 'seller';
-    user.isSellerApproved = false;
-    await user.save();
-    
-    res.json({ message: 'Seller application submitted' });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
-});
+);
 
 // Reset password
 router.post('/reset-password', async (req, res) => {
