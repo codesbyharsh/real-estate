@@ -27,12 +27,14 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch(err => console.error('MongoDB connection error:', err));
   
 // Import routes
-const propertyRouter = require('./routes/propertyRoutes');
-const userRouter = require('./routes/userRoutes');
+const propertyRoutes = require('./routes/propertyRoutes');
+const userRoutes = require('./routes/userRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 // Use routes
-app.use('/api/properties', propertyRouter);
-app.use('/api/users', userRouter);
+app.use('/api/properties', propertyRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/admin', adminRoutes);
 
 // Basic route
 app.get('/', (req, res) => {
