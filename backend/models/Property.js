@@ -12,6 +12,7 @@ const propertySchema = new mongoose.Schema({
   },
   price: { type: Number, required: true },
   owner: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: false },
+  images: [String],
   isDuplicate: { type: Boolean, default: false },
   duplicateReason: String,
   createdAt: { type: Date, default: Date.now }

@@ -6,9 +6,10 @@ const adminAuth = (req, res, next) => {
   }
   
   try {
-    // Verify token (in real app, use JWT)
+    // Parse the token
     const decoded = JSON.parse(token);
     
+    // Check if user is admin
     if (!decoded.isAdmin) {
       return res.status(403).json({ message: 'Admin privileges required' });
     }
